@@ -1,0 +1,182 @@
+import java.util.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class Graph {
+
+    private LinkedList<Edge>[] adjLists;
+    private int vertexCount;
+
+    // Initialize a graph with the given number of vertices and no edges.
+    @SuppressWarnings("unchecked")
+    public Graph(int numVertices) {
+        adjLists = (LinkedList<Edge>[]) new LinkedList[numVertices];
+        for (int k = 0; k < numVertices; k++) {
+            adjLists[k] = new LinkedList<Edge>();
+        }
+        vertexCount = numVertices;
+    }
+
+    // Add to the graph a directed edge from vertex v1 to vertex v2,
+    // with the given edge information. If the edge already exists,
+    // replaces the current edge with a new edge with edgeInfo.
+    public void addEdge(int v1, int v2, int edgeWeight) {
+        if (!isAdjacent(v1, v2)) {
+            LinkedList<Edge> v1Neighbors = adjLists[v1];
+            v1Neighbors.add(new Edge(v1, v2, edgeWeight));
+        } else {
+            LinkedList<Edge> v1Neighbors = adjLists[v1];
+            for (Edge e : v1Neighbors) {
+                if (e.to() == v2) {
+                    e.edgeWeight = edgeWeight;
+                }
+            }
+        }
+    }
+
+    // Add to the graph an undirected edge from vertex v1 to vertex v2,
+    // with the given edge information. If the edge already exists,
+    // replaces the current edge with a new edge with edgeInfo.
+    public void addUndirectedEdge(int v1, int v2, int edgeWeight) {
+        addEdge(v1, v2, edgeWeight);
+        addEdge(v2, v1, edgeWeight);
+    }
+
+    // Return true if there is an edge from vertex "from" to vertex "to";
+    // return false otherwise.
+    public boolean isAdjacent(int from, int to) {
+        for (Edge e : adjLists[from]) {
+            if (e.to() == to) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Returns a list of all the neighboring  vertices 'u'
+    // such that the edge (VERTEX, 'u') exists in this graph.
+    public List<Integer> neighbors(int vertex) {
+        ArrayList<Integer> neighbors = new ArrayList<>();
+        for (Edge e : adjLists[vertex]) {
+            neighbors.add(e.to());
+        }
+        return neighbors;
+    }
+
+    // Runs Dijkstra's algorithm starting from vertex 'startVertex' and returns
+    // an integer array consisting of the shortest distances from 'startVertex'
+    // to all other vertices.
+    public int[] dijkstras(int startVertex) {
+
+        int [] dist = new int[vertexCount];
+
+        int[] back = new int[vertexCount];
+        boolean[] marked = new boolean[vertexCount];
+
+        for (int i = 0; i < vertexCount; i += 1) {
+            dist[i] = Integer.MAX_VALUE / 10;
+            back[i] = -1;
+        }
+
+        dist[0] = 0;
+
+        Comparator<Integer> priorityQueueComparator = new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return dist[o1] - dist[o2];
+            }
+        };
+
+        PriorityQueue<Integer> fringe = new PriorityQueue<Integer>(vertexCount, priorityQueueComparator);
+        for (int i = 0; i < vertexCount; i++) {
+            fringe.add(i);
+        }
+
+        while (! fringe.isEmpty()) {
+            int v = fringe.remove();
+
+            for (int w : neighbors(v)) {
+                Edge e = getEdge(v, w);
+
+                if (e.edgeWeight < dist[w] - dist[v]) {
+                    dist[w] = dist[v] + e.edgeWeight;
+                    back[w] = v;
+                    fringe.add(w);
+                }
+            }
+        }
+
+        return dist;
+    }
+
+    // Returns the Edge object corresponding to the listed vertices, v1 and v2.
+    // You may find this helpful to implement!
+    private Edge getEdge(int v1, int v2) {
+        for (Edge e : adjLists[v1]) {
+            if (e.to() == v2) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    private class Edge {
+
+        private int from;
+        private int to;
+        private int edgeWeight;
+
+        public Edge(int from, int to, int weight) {
+            this.from = from;
+            this.to = to;
+            this.edgeWeight = weight;
+        }
+
+        public int to() {
+            return to;
+        }
+
+        public int info() {
+            return edgeWeight;
+        }
+
+        public String toString() {
+            return "(" + from + "," + to + ",dist=" + edgeWeight + ")";
+        }
+
+    }
+
+
+
+    public static void main(String[] args) {
+
+        //test1();
+        /*
+        Graph g1 = new Graph(5);
+        g1.addEdge(0, 1, 1);
+        g1.addEdge(0, 2, 4);
+        g1.addEdge(0, 4, 1);
+        g1.addEdge(1, 2, 1);
+        g1.addEdge(2, 0, 1);
+        g1.addEdge(2, 3, 1);
+        g1.addEdge(4, 3, 3);
+
+        int [] expected = {0, 1, 2, 3, 4};
+        int [] dij = g1.dijkstras(0);
+        int x = 0;
+
+        assertArrayEquals(expected, g1.dijkstras(0));
+
+        Graph g2 = new Graph(5);
+        g2.addEdge(0, 1, 1);
+        g2.addEdge(0, 2, 1);
+        g2.addEdge(2, 0, 1);
+        g2.addEdge(0, 4, 1);
+        g2.addEdge(1, 2, 1);
+        g2.addEdge(2, 3, 1);
+        g2.addEdge(4, 3, 1);
+
+        int [] expected2 = {0, 1, 1, 2, 1};
+        assertArrayEquals(expected2, g2.dijkstras(0));*/
+    }
+}
